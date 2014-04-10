@@ -4,21 +4,34 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
+
 include /usr/share/dpkg/pkg-info.mk
 
+
 DESTDIR=$(CURDIR)/debian/erlang-p1-xml
+
 
 %:
 	dh $@ --buildsystem=rebar --with rebar
 
+
+override_dh_auto_configure:
+	./configure
+	dh_auto_configure
+
+
 override_dh_auto_install:
 	dh_auto_install
-	for file in include/*.hrl ; do \
+	for file in include/*.hrl priv/lib/*.so ; do \
 		fname=$$(basename $${file}) ; \
-		subdir=$$(basename $$(dirname $${file})) ; \
+		subdir=$$(dirname $${file}) ; \
 		if [ ! -f $(DESTDIR)/usr/lib/erlang/lib/p1_xml-$(DEB_VERSION_UPSTREAM)/$${subdir}/$${fname} ] ; then \
 			install -m 755 -d $(DESTDIR)/usr/lib/erlang/lib/p1_xml-$(DEB_VERSION_UPSTREAM)/$${subdir} ; \
-			install -m 644 $${file} \
-			$(DESTDIR)/usr/lib/erlang/lib/p1_xml-$(DEB_VERSION_UPSTREAM)/$${subdir} ; \
+			install -m 644 $${file} $(DESTDIR)/usr/lib/erlang/lib/p1_xml-$(DEB_VERSION_UPSTREAM)/$${subdir} ; \
 		fi ; \
 	done
+
+
+override_dh_auto_clean:
+	rm -f config.log config.status rebar.config.script
+	dh_auto_clean
