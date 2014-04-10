@@ -1,0 +1,15 @@
+Source: erlang-p1-xml
+Section: unknown
+Priority: optional
+Maintainer: Philipp Huebner <debalance@debian.org>
+Build-Depends: autotools-dev, debhelper (>= 9), dh-rebar
+Standards-Version: 3.9.4
+Homepage: <insert the upstream URL, if relevant>
+#Vcs-Git: git://git.debian.org/collab-maint/erlang-p1-xml.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/erlang-p1-xml.git;a=summary
+
+Package: erlang-p1-xml
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: <insert up to 60 chars description>
+ <insert long description, indented with spaces>

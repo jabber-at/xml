@@ -1,0 +1,5 @@
+erlang-p1-xml (0.2014.02.28-1) unstable; urgency=low
+
+  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+
+ -- Philipp Huebner <debalance@debian.org>  Thu, 10 Apr 2014 15:45:12 +0200
