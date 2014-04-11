@@ -26,6 +26,12 @@ License: GPL-2+
  License version 2 can be found in the file
  `/usr/share/common-licenses/GPL-2'.
 
+Files: configure
+Copyright: 1992-2010 Free Software Foundation, Inc.
+License:
+ This configure script is free software; the Free Software Foundation
+ gives unlimited permission to copy, distribute and modify it.
+
 Files: debian/*
 Copyright: 2014 Philipp Huebner <debalance@debian.org>
 License: GPL-2+
