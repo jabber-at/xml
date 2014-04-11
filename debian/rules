@@ -1,6 +1,10 @@
 #!/usr/bin/make -f
 # -*- makefile -*-
 
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+DPKG_EXPORT_BUILDFLAGS = 1
+include /usr/share/dpkg/buildflags.mk
+
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
@@ -34,4 +38,5 @@ override_dh_auto_install:
 
 override_dh_auto_clean:
 	rm -f config.log config.status rebar.config.script
+	rm -rf priv
 	dh_auto_clean
