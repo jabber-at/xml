@@ -10,7 +10,7 @@ Homepage: https://github.com/processone/xml
 Package: erlang-p1-xml
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: xml utils for erlang
+Description: XML utilities for Erlang
  This library was written for ejabberd which still uses it.
  It was split off into it's own project to follow
  Erlang/OTP guidelines.
