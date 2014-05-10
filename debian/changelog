@@ -1,3 +1,9 @@
+erlang-p1-xml (0.2014.02.28-2) unstable; urgency=medium
+
+  * Add correct Erlang dependencies
+
+ -- Philipp Huebner <debalance@debian.org>  Sat, 10 May 2014 12:52:43 +0200
+
 erlang-p1-xml (0.2014.02.28-1) unstable; urgency=low
 
   * Initial release, see #744885 for background
