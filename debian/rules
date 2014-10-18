@@ -1,7 +1,15 @@
 #!/usr/bin/make -f
 # -*- makefile -*-
 
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+# PIE doesn't work on wheezy-amd64
+ifeq (${DEB_BUILD_ARCH},amd64)
+ifeq ($(shell lsb_release -sc),wheezy)
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all,-pie
+endif
+endif
+
 DPKG_EXPORT_BUILDFLAGS = 1
 include /usr/share/dpkg/buildflags.mk
 
