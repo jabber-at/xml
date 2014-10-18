@@ -1,0 +1,23 @@
+erlang-p1-xml (0.2014.08.27-1) unstable; urgency=low
+
+  * Imported Upstream version 0.2014.08.27
+
+ -- Philipp Huebner <debalance@debian.org>  Thu, 28 Aug 2014 09:53:10 +0200
+
+erlang-p1-xml (0.2014.07.02-1) unstable; urgency=medium
+
+  * Imported Upstream version 0.2014.07.02
+
+ -- Philipp Huebner <debalance@debian.org>  Thu, 10 Jul 2014 17:52:35 +0200
+
+erlang-p1-xml (0.2014.02.28-2) unstable; urgency=medium
+
+  * Added correct Erlang dependencies
+
+ -- Philipp Huebner <debalance@debian.org>  Sat, 10 May 2014 12:52:43 +0200
+
+erlang-p1-xml (0.2014.02.28-1) unstable; urgency=low
+
+  * Initial release, see #744885 for background
+
+ -- Philipp Huebner <debalance@debian.org>  Wed, 16 Apr 2014 18:34:04 +0200
