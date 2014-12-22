@@ -1,6 +1,7 @@
 erlang-p1-xml (0.2014.10.04-2) unstable; urgency=low
 
   * Add p1-xml-old-erlang.diff, fixes xmlrpc under wheezy.
+  * Name me as the maintainer.
 
  -- Mathias Ertl <mati@jabber.at>  Mon, 22 Dec 2014 22:31:12 +0100
 

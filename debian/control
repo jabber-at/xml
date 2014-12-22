@@ -1,6 +1,6 @@
 Source: erlang-p1-xml
 Priority: optional
-Maintainer: Philipp Huebner <debalance@debian.org>
+Maintainer: Mathias Ertl <mati@jabber.at>
 Build-Depends: debhelper (>= 9), dh-rebar, libexpat1-dev
 Standards-Version: 3.9.5
 Section: libs
