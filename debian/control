@@ -5,6 +5,8 @@ Build-Depends: debhelper (>= 9), dh-rebar, libexpat1-dev
 Standards-Version: 3.9.5
 Section: libs
 Homepage: https://github.com/processone/xml
+VCS-Browser: https://github.com/jabber-at/xml
+VCS-Git: https://github.com/jabber-at/xml.git
 
 
 Package: erlang-p1-xml
