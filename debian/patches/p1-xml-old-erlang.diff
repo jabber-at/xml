@@ -1,0 +1,22 @@
+diff --git a/src/xmlrpc_codec.erl b/src/xmlrpc_codec.erl
+index 59dde30..984ac7f 100644
+--- a/src/xmlrpc_codec.erl
++++ b/src/xmlrpc_codec.erl
+@@ -547,7 +547,7 @@ decode_int_cdata(__TopXMLNS, _val) ->
+     end.
+ 
+ encode_int_cdata(_val, _acc) ->
+-    [{xmlcdata, erlang:integer_to_binary(_val)} | _acc].
++    [{xmlcdata, jlib:integer_to_binary(_val)} | _acc].
+ 
+ decode_i4(__TopXMLNS, __IgnoreEls,
+ 	  {xmlel, <<"i4">>, _attrs, _els}) ->
+@@ -582,7 +582,7 @@ decode_i4_cdata(__TopXMLNS, _val) ->
+     end.
+ 
+ encode_i4_cdata(_val, _acc) ->
+-    [{xmlcdata, erlang:integer_to_binary(_val)} | _acc].
++    [{xmlcdata, jlib:integer_to_binary(_val)} | _acc].
+ 
+ decode_value(__TopXMLNS, __IgnoreEls,
+ 	     {xmlel, <<"value">>, _attrs, _els}) ->
