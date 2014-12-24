@@ -1,3 +1,10 @@
+erlang-p1-xml (0.2014.10.04-3) unstable; urgency=low
+
+  * Replace p1-xml-old-erlang.diff with erlang-r15-patch, which should fix all
+    r15 compat-issues.
+
+ -- Mathias Ertl <mati@jabber.at>  Thu, 25 Dec 2014 00:20:20 +0100
+
 erlang-p1-xml (0.2014.10.04-2) unstable; urgency=low
 
   * Add p1-xml-old-erlang.diff, fixes xmlrpc under wheezy.
