@@ -2,6 +2,7 @@ erlang-p1-xml (0.2014.10.04-3) unstable; urgency=low
 
   * Replace p1-xml-old-erlang.diff with erlang-r15-patch, which should fix all
     r15 compat-issues.
+  * Add dpkg-dev (>= 1.16.1~) as dependency to silence lintian under wheezy.
 
  -- Mathias Ertl <mati@jabber.at>  Thu, 25 Dec 2014 00:20:20 +0100
 
