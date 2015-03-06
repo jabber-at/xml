@@ -1,6 +1,7 @@
 erlang-p1-xml (0.2015.02.10-1) unstable; urgency=low
 
   * Import Upstream version 0.2015.02.10
+  * Remove erlang-r15-compat.patch (applied upstream).
 
  -- Mathias Ertl <mati@jabber.at>  Fri, 06 Mar 2015 23:59:27 +0100
 
