@@ -1,3 +1,9 @@
+erlang-p1-xml (0.2015.02.10-1) unstable; urgency=low
+
+  * Import Upstream version 0.2015.02.10
+
+ -- Mathias Ertl <mati@jabber.at>  Fri, 06 Mar 2015 23:59:27 +0100
+
 erlang-p1-xml (0.2014.10.04-3) unstable; urgency=low
 
   * Replace p1-xml-old-erlang.diff with erlang-r15-patch, which should fix all
