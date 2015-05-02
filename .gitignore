@@ -1,7 +1,0 @@
-.rebar/
-c_src/*.o
-config.log
-config.status
-ebin
-priv/
-rebar.config.script
