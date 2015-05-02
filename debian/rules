@@ -28,6 +28,6 @@ override_dh_auto_install:
 
 
 override_dh_auto_clean:
-	rm -f config.log config.status rebar.config.script
+	rm -f config.log config.status
 	rm -rf priv
 	dh_auto_clean

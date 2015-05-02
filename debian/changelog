@@ -1,3 +1,13 @@
+erlang-p1-xml (0.2015.04.15-1) unstable; urgency=medium
+
+  * Imported Upstream version 0.2015.04.15
+  * Updated Standards-Version: 3.9.6 (no changes needed)
+  * Updated years in debian/copyright
+  * Added Vcs links to debian/control
+  * Streamlined debian/rules
+
+ -- Philipp Huebner <debalance@debian.org>  Sat, 02 May 2015 19:01:41 +0200
+
 erlang-p1-xml (0.2014.08.27-1) unstable; urgency=low
 
   * Imported Upstream version 0.2014.08.27
