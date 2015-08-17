@@ -1,3 +1,11 @@
+erlang-p1-xml (0.2015.07.24-1) unstable; urgency=medium
+
+  * Imported Upstream version 0.2015.07.24
+  * Enabled eunit
+  * Fixed debian/copyright (make lintian happy)
+
+ -- Philipp Huebner <debalance@debian.org>  Mon, 17 Aug 2015 17:33:00 +0200
+
 erlang-p1-xml (0.2015.04.15-1) unstable; urgency=medium
 
   * Imported Upstream version 0.2015.04.15
