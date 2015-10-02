@@ -1,3 +1,9 @@
+erlang-p1-xml (0.2015.10.01-0.1) unstable; urgency=low
+
+  * Import Upstream version 0.2015.10.01.
+
+ -- Mathias Ertl <mati@jabber.at>  Fri, 02 Oct 2015 18:23:29 +0200
+
 erlang-p1-xml (0.2015.06.15-0.2) unstable; urgency=low
 
   * New debian revision to fix repository fuckup.
