@@ -5,22 +5,19 @@
 %%% Created : 20 Nov 2002 by Alexey Shchepin <alexey@process-one.net>
 %%%
 %%%
-%%% p1_xml, Copyright (C) 2002-2015   ProcessOne
+%%% Copyright (C) 2002-2015 ProcessOne, SARL. All Rights Reserved.
 %%%
-%%% This program is free software; you can redistribute it and/or
-%%% modify it under the terms of the GNU General Public License as
-%%% published by the Free Software Foundation; either version 2 of the
-%%% License, or (at your option) any later version.
+%%% Licensed under the Apache License, Version 2.0 (the "License");
+%%% you may not use this file except in compliance with the License.
+%%% You may obtain a copy of the License at
 %%%
-%%% This program is distributed in the hope that it will be useful,
-%%% but WITHOUT ANY WARRANTY; without even the implied warranty of
-%%% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-%%% General Public License for more details.
+%%%     http://www.apache.org/licenses/LICENSE-2.0
 %%%
-%%% You should have received a copy of the GNU General Public License
-%%% along with this program; if not, write to the Free Software
-%%% Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-%%% 02111-1307 USA
+%%% Unless required by applicable law or agreed to in writing, software
+%%% distributed under the License is distributed on an "AS IS" BASIS,
+%%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%%% See the License for the specific language governing permissions and
+%%% limitations under the License.
 %%%
 %%%----------------------------------------------------------------------
 
@@ -28,74 +25,27 @@
 
 -author('alexey@process-one.net').
 
--behaviour(gen_server).
-
 -export([element_to_binary/1, get_so_path/0,
-	 crypt/1, make_text_node/1, remove_cdata/1,
+	 crypt/1, remove_cdata/1,
 	 remove_subtags/3, get_cdata/1, get_tag_cdata/1,
 	 get_attr/2, get_attr_s/2, get_tag_attr/2,
 	 get_tag_attr_s/2, get_subtag/2, get_subtags/2, get_subtag_cdata/2,
          get_subtag_with_xmlns/3, get_subtags_with_xmlns/3,
 	 append_subtags/2, get_path_s/2,
-	 replace_tag_attr/3, to_xmlel/1]).
+	 replace_tag_attr/3, replace_subtag/2, to_xmlel/1]).
 
-%% Internal exports, call-back functions.
--export([start_link/0, init/1, handle_call/3, handle_cast/2,
-	 handle_info/2, code_change/3, terminate/2]).
+-export([load_nif/0]).
 
 -include("xml.hrl").
 
-%% Select at compile time how to escape characters in binary text
-%% nodes.
-%% Can be choosen with ./configure --enable-full-xml
--ifdef(FULL_XML_SUPPORT).
-
--define(ESCAPE_BINARY(CData), make_text_node(CData)).
-
--else.
-
--define(ESCAPE_BINARY(CData), crypt(CData)).
-
--endif.
-
-start_link() ->
-    gen_server:start_link({local, ?MODULE}, ?MODULE, [],
-			  []).
-
-%% Can be choosen with ./configure --disable-nif
--ifdef(DISABLE_NIF).
-init([]) ->
-    {ok, []}.
--else.
 %% Replace element_to_binary/1 with NIF
-%% Can be choosen with ./configure --disable-nif
-init([]) ->
+load_nif() ->
     SOPath = filename:join(get_so_path(), "xml"),
     case catch erlang:load_nif(SOPath, 0) of
         ok -> ok;
-        Err -> error_logger:warning_msg("unable to load xml NIF: ~p~n", [Err])
-    end,
-    {ok, []}.
--endif.
-
-%%% --------------------------------------------------------
-%%% The call-back functions.
-%%% --------------------------------------------------------
-
-handle_call(_, _, State) -> {noreply, State}.
-
-handle_cast(_, State) -> {noreply, State}.
-
-handle_info({'EXIT', Port, Reason}, Port) ->
-    {stop, {port_died, Reason}, Port};
-handle_info({'EXIT', _Pid, _Reason}, Port) ->
-    {noreply, Port};
-handle_info(_, State) -> {noreply, State}.
-
-code_change(_OldVsn, State, _Extra) -> {ok, State}.
-
-terminate(_Reason, _State) ->
-    ok.
+        Err -> error_logger:warning_msg("unable to load xml NIF: ~p~n", [Err]),
+               {error, unable_to_load_nif}
+    end.
 
 %%
 -spec(element_to_binary/1 ::
@@ -104,46 +54,8 @@ terminate(_Reason, _State) ->
     -> binary()
 ).
 
-element_to_binary(El) ->
-    iolist_to_binary(element_to_string(El)).
-
-%%
--spec(element_to_string/1 ::
-(
-  El :: xmlel() | cdata())
-    -> string()
-).
-
-element_to_string(El) ->
-    case catch element_to_string_nocatch(El) of
-      {'EXIT', Reason} -> erlang:error({badxml, El, Reason});
-      Result -> Result
-    end.
-
--spec(element_to_string_nocatch/1 ::
-(
-  El :: xmlel() | cdata())
-    -> iolist()
-).
-
-element_to_string_nocatch(El) ->
-    case El of
-      #xmlel{name = Name, attrs = Attrs, children = Els} ->
-	  if Els /= [] ->
-		 [$<, Name, attrs_to_list(Attrs), $>,
-		  [element_to_string_nocatch(E) || E <- Els], $<, $/,
-		  Name, $>];
-	     true -> [$<, Name, attrs_to_list(Attrs), $/, $>]
-	  end;
-      %% We do not crypt CDATA binary, but we enclose it in XML CDATA
-      {xmlcdata, CData} ->
-	  ?ESCAPE_BINARY(CData)
-    end.
-
-attrs_to_list(Attrs) -> [attr_to_list(A) || A <- Attrs].
-
-attr_to_list({Name, Value}) ->
-    [$\s, Name, $=, $', crypt(Value), $'].
+element_to_binary(_El) ->
+    erlang:nif_error(nif_not_loaded).
 
 crypt(S) ->
     << <<(case C of
@@ -155,70 +67,6 @@ crypt(S) ->
               _ -> <<C>>
           end)/binary>>
        || <<C>> <= S >>.
-
-%%
--spec(make_text_node/1 ::
-(
-  CData :: binary())
-    -> binary()
-).
-
-make_text_node(CData) ->
-    case cdata_need_escape(CData) of
-      cdata ->
-	  CDATA1 = <<"<![CDATA[">>,
-	  CDATA2 = <<"]]>">>,
-	  iolist_to_binary([CDATA1, CData, CDATA2]);
-      none -> CData;
-      {cdata, EndTokens} ->
-	  EscapedCData = escape_cdata(CData, EndTokens),
-	  iolist_to_binary(EscapedCData)
-    end.
-
-cdata_need_escape(CData) ->
-    cdata_need_escape(CData, 0, false, []).
-
-cdata_need_escape(<<>>, _, false, _) -> none;
-cdata_need_escape(<<>>, _, true, []) -> cdata;
-cdata_need_escape(<<>>, _, true, CDataEndTokens) ->
-    {cdata, lists:reverse(CDataEndTokens)};
-cdata_need_escape(<<$], $], $>, Rest/binary>>,
-		  CurrentPosition, _XMLEscape, CDataEndTokens) ->
-    NewPosition = CurrentPosition + 3,
-    cdata_need_escape(Rest, NewPosition, true,
-		      [CurrentPosition + 1 | CDataEndTokens]);
-%% Only <, & need to be escaped in XML text node
-%% See reference: http://www.w3.org/TR/xml11/#syntax
-cdata_need_escape(<<$<, Rest/binary>>, CurrentPosition,
-		  _XMLEscape, CDataEndTokens) ->
-    cdata_need_escape(Rest, CurrentPosition + 1, true,
-		      CDataEndTokens);
-cdata_need_escape(<<$&, Rest/binary>>, CurrentPosition,
-		  _XMLEscape, CDataEndTokens) ->
-    cdata_need_escape(Rest, CurrentPosition + 1, true,
-		      CDataEndTokens);
-cdata_need_escape(<<_:8, Rest/binary>>, CurrentPosition,
-		  XMLEscape, CDataEndTokens) ->
-    cdata_need_escape(Rest, CurrentPosition + 1, XMLEscape,
-		      CDataEndTokens).
-
-escape_cdata(CData, EndTokens) ->
-    escape_cdata(CData, 0, EndTokens, []).
-
-escape_cdata(<<>>, _CurrentPosition, [], Acc) ->
-    lists:reverse(Acc);
-escape_cdata(Rest, CurrentPosition, [], Acc) ->
-    CDATA1 = <<"<![CDATA[">>,
-    CDATA2 = <<"]]>">>,
-    escape_cdata(<<>>, CurrentPosition, [],
-		 [CDATA2, Rest, CDATA1 | Acc]);
-escape_cdata(CData, Index, [Pos | Positions], Acc) ->
-    CDATA1 = <<"<![CDATA[">>,
-    CDATA2 = <<"]]>">>,
-    Split = Pos - Index,
-    {Part, Rest} = split_binary(CData, Split + 1),
-    escape_cdata(Rest, Pos + 1, Positions,
-		 [CDATA2, Part, CDATA1 | Acc]).
 
 %%
 -spec(remove_cdata_p/1 ::
@@ -239,6 +87,9 @@ remove_cdata_p(_) -> false.
 
 remove_cdata(L) -> [E || E <- L, remove_cdata_p(E)].
 
+%% This function is intended to remove subtags based on a name and an
+%% attribute, usually an xmlns attribute for a specific XMPP
+%% extension.
 -spec(remove_subtags/3 ::
 (
   Xmlel :: xmlel(),
@@ -529,6 +380,23 @@ replace_tag_attr(Name, Value, Xmlel) ->
         attrs = [{Name, Value} | lists:keydelete(Name, 1, Xmlel#xmlel.attrs)]
     }.
 
+
+-spec(replace_subtag/2 ::
+(
+  Tag   :: xmlel(),
+  Xmlel :: xmlel())
+    -> Xmlel :: #xmlel{
+           name     :: binary(),
+           attrs    :: [attr(),...],
+           children :: [xmlel() | cdata()]
+       }
+).
+
+replace_subtag(#xmlel{name = Name} = Tag, Xmlel) ->
+    Xmlel#xmlel{
+        children = [Tag | lists:keydelete(Name, #xmlel.name, Xmlel#xmlel.children)]
+    }.
+
 to_xmlel({_, Name, Attrs, Els}) ->
     #xmlel{name = iolist_to_binary(Name),
            attrs = [{iolist_to_binary(K), iolist_to_binary(V)}
@@ -538,6 +406,19 @@ to_xmlel({xmlcdata, CData}) ->
     {xmlcdata, iolist_to_binary(CData)}.
 
 get_so_path() ->
-    EbinDir = filename:dirname(code:which(?MODULE)),
-    AppDir = filename:dirname(EbinDir),
-    filename:join([AppDir, "priv", "lib"]).
+    PrivDir = case code:priv_dir(p1_xml) of
+                  {error, _} ->
+                      %% code:priv is looking for a directory with Name and optional version in path
+                      %% Search for p1_xml will fail if we are using xml as directory name:
+                      case code:priv_dir(xml) of
+                          {error, _} ->
+                              EbinDir = filename:dirname(code:which(?MODULE)),
+                              AppDir = filename:dirname(EbinDir),
+                              filename:join([AppDir, "priv"]);
+                          V2 ->
+                              V2
+                      end;
+                  V ->
+                      V
+              end,
+    filename:join([PrivDir, "lib"]).
