@@ -27,6 +27,8 @@ override_dh_auto_configure:
 
 override_dh_auto_install:
 	dh_auto_install
+	ls
+	ls priv/
 	for file in include/*.hrl priv/lib/*.so ; do \
 		fname=$$(basename $${file}) ; \
 		subdir=$$(dirname $${file}) ; \
