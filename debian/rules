@@ -1,8 +1,7 @@
 #!/usr/bin/make -f
-# -*- makefile -*-
+#export DH_VERBOSE=1
 
 include /usr/share/dpkg/default.mk
-
 
 DESTDIR=$(CURDIR)/debian/erlang-p1-xml
 
