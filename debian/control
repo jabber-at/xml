@@ -2,11 +2,8 @@ Source: erlang-p1-xml
 Priority: optional
 Maintainer: Mathias Ertl <mati@jabber.at>
 X-Orig-Maintainer: Philipp Huebner <debalance@debian.org>
-Build-Depends: debhelper (>= 9), dh-rebar, libexpat1-dev, dpkg-dev (>= 1.16.1~),
- erlang-syntax-tools, erlang-dev (>= 1:17),
- erlang-eunit, erlang-xmerl, erlang-dialyzer, erlang-proper-dev, erlang-tools,
- expat, libexpat1-dev, libexpat1
-Standards-Version: 3.9.5
+Build-Depends: debhelper (>= 9), dh-rebar, erlang-eunit, erlang-syntax-tools, libexpat1-dev
+Standards-Version: 3.9.6
 Section: libs
 Homepage: https://github.com/processone/xml
 VCS-Browser: https://github.com/jabber-at/xml
