@@ -25,7 +25,7 @@
 
 -author('alexey@process-one.net').
 
--export([new/1, new/2, parse/2, close/1,
+-export([new/1, new/2, parse/2, close/1, reset/1,
 	 change_callback_pid/2, parse_element/1]).
 
 -export([load_nif/0]).
@@ -52,7 +52,7 @@
 -export_type([xml_stream_state/0, xml_stream_el/0]).
 
 load_nif() ->
-    NifFile = xml:get_so_path([p1_xml, xml], "xml_stream"),
+    NifFile = p1_nif_utils:get_so_path(?MODULE, [p1_xml, xml], "xml_stream"),
     case erlang:load_nif(NifFile, 0) of
 	ok ->
 	    ok;
@@ -72,12 +72,17 @@ new(CallbackPid) ->
 new(_CallbackPid, _MaxSize) ->
     erlang:nif_error(nif_not_loaded).
 
+-spec reset(xml_stream_state()) -> xml_stream_state().
+
+reset(_State) ->
+    erlang:nif_error(nif_not_loaded).
+
 -spec change_callback_pid(xml_stream_state(), pid()) -> xml_stream_state().
 
 change_callback_pid(_State, _CallbackPid) ->
     erlang:nif_error(nif_not_loaded).
 
--spec parse(xml_stream_state(), iodata()) -> xml_stream_state().
+-spec parse(xml_stream_state(), binary()) -> xml_stream_state().
 
 parse(_State, _Data) ->
     erlang:nif_error(nif_not_loaded).
@@ -87,7 +92,7 @@ parse(_State, _Data) ->
 close(_State) ->
     erlang:nif_error(nif_not_loaded).
 
--spec parse_element(iodata()) -> xmlel() |
+-spec parse_element(binary()) -> xmlel() |
                                  {error, parse_error} |
                                  {error, binary()}.
 
