@@ -1,6 +1,7 @@
 erlang-p1-xml (0.2015.11.24-0.1) unstable; urgency=low
 
   * Import Upstream version 0.2015.11.24.
+  * Add remove-deps.patch to remove rebar dependencies.
 
  -- Mathias Ertl <mati@jabber.at>  Sun, 29 Nov 2015 18:19:17 +0100
 
