@@ -3,6 +3,7 @@ erlang-p1-xml (1.1.1-0.1) unstable; urgency=low
   * New upstream release.
   * This package now uses upstream releases instead of a git snapshot,
     hence the versioning has changed.
+  * Add erlang-p1-utils (>= 1.0.1) as build dependency.
 
  -- Mathias Ertl <mati@jabber.at>  Fri, 15 Jan 2016 21:26:44 +0100
 
