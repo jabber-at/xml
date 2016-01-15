@@ -1,3 +1,11 @@
+erlang-p1-xml (1.1.1-0.1) unstable; urgency=low
+
+  * New upstream release.
+  * This package now uses upstream releases instead of a git snapshot,
+    hence the versioning has changed.
+
+ -- Mathias Ertl <mati@jabber.at>  Fri, 15 Jan 2016 21:26:44 +0100
+
 erlang-p1-xml (0.2015.11.24-0.1) unstable; urgency=low
 
   * Import Upstream version 0.2015.11.24.
