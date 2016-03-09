@@ -4,6 +4,7 @@ erlang-p1-xml (1.1.3-0.1) unstable; urgency=low
     * Update control, rules, watch and copyright files.
     * Add docs file.
     * Rename remove_deps.diff patch to remove-deps.diff.
+  * Refresh remove-deps.diff.
 
  -- Mathias Ertl <mati@jabber.at>  Wed, 09 Mar 2016 10:15:43 +0100
 

@@ -1,11 +1,17 @@
---- a/rebar.config
-+++ b/rebar.config
-@@ -12,8 +12,6 @@
- {port_specs, [{"priv/lib/xml.so", ["c_src/xml.c"]},
-               {"priv/lib/xml_stream.so", ["c_src/xml_stream.c"]}]}.
+Description: remove deps in rebar.config
+ Without this patch, rebar would download and compile the listed deps
+ at compile time.
+Author: Philipp Huebner <debalance@debian.org>
+
+Index: erlang-p1-xml/rebar.config
+===================================================================
+--- erlang-p1-xml.orig/rebar.config
++++ erlang-p1-xml/rebar.config
+@@ -25,7 +25,6 @@
+ {port_specs, [{"priv/lib/fxml.so", ["c_src/fxml.c"]},
+               {"priv/lib/fxml_stream.so", ["c_src/fxml_stream.c"]}]}.
  
--{deps, [{p1_utils, ".*", {git, "git://github.com/processone/p1_utils", {tag, "1.0.0"}}}]}.
--
- {clean_files, ["c_src/xml.gcda", "c_src/xml.gcno", "c_src/xml_stream.gcda", "c_src/xml_stream.gcno"]}.
+-{deps, [{p1_utils, ".*", {git, "https://github.com/processone/p1_utils", {tag, "1.0.3"}}}]}.
  
- {cover_enabled, true}.
+ {clean_files, ["c_src/fxml.gcda", "c_src/fxml.gcno", "c_src/fxml_stream.gcda", "c_src/fxml_stream.gcno"]}.
+ 
