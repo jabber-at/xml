@@ -1,20 +1,18 @@
 Source: erlang-p1-xml
 Priority: optional
 Maintainer: Mathias Ertl <mati@jabber.at>
-X-Orig-Maintainer: Philipp Huebner <debalance@debian.org>
-Build-Depends: debhelper (>= 9), dh-rebar, erlang-eunit, erlang-syntax-tools, libexpat1-dev,
- erlang-p1-utils (>= 1.0.1)
-Standards-Version: 3.9.6
+XSBC-Orig-Maintainer: Philipp Huebner <debalance@debian.org>
+Build-Depends: debhelper (>= 9), dh-rebar, erlang-eunit, erlang-p1-utils (>= 1.0.3), erlang-syntax-tools, libexpat1-dev
+Standards-Version: 3.9.7
 Section: libs
-Homepage: https://github.com/processone/xml
+Homepage: https://github.com/processone/fast_xml
 VCS-Browser: https://github.com/jabber-at/xml
 VCS-Git: https://github.com/jabber-at/xml.git
-
 
 Package: erlang-p1-xml
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, erlang-base | ${erlang-abi:Depends},
-         ${erlang:Depends}
+         ${erlang:Depends}, erlang-p1-utils (>= 1.0.3)
 Description: XML utilities for Erlang
  This library was written for ejabberd which still uses it.
  It was split off into it's own project to follow
