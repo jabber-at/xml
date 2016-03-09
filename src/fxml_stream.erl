@@ -1,5 +1,5 @@
 %%%----------------------------------------------------------------------
-%%% File    : xml_stream.erl
+%%% File    : fxml_stream.erl
 %%% Author  : Alexey Shchepin <alexey@process-one.net>
 %%% Purpose : Parse XML streams
 %%% Created : 17 Nov 2002 by Alexey Shchepin <alexey@process-one.net>
@@ -21,7 +21,7 @@
 %%%
 %%%----------------------------------------------------------------------
 
--module(xml_stream).
+-module(fxml_stream).
 
 -author('alexey@process-one.net').
 
@@ -30,7 +30,7 @@
 
 -export([load_nif/0]).
 
--include("xml.hrl").
+-include("fxml.hrl").
 
 -record(xml_stream_state,
 	{callback_pid = self() :: pid(),
@@ -52,7 +52,7 @@
 -export_type([xml_stream_state/0, xml_stream_el/0]).
 
 load_nif() ->
-    NifFile = p1_nif_utils:get_so_path(?MODULE, [p1_xml, xml], "xml_stream"),
+    NifFile = p1_nif_utils:get_so_path(?MODULE, [fast_xml], "fxml_stream"),
     case erlang:load_nif(NifFile, 0) of
 	ok ->
 	    ok;

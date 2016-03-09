@@ -1,4 +1,6 @@
-# Erlang and Elixir XML Parsing [![Build Status](https://travis-ci.org/processone/xml.svg?branch=master)](https://travis-ci.org/processone/xml) [![Coverage Status](https://coveralls.io/repos/processone/xml/badge.svg?branch=master&service=github)](https://coveralls.io/github/processone/xml?branch=master)
+# Erlang and Elixir XML Parsing
+
+[![Build Status](https://travis-ci.org/processone/fast_xml.svg?branch=master)](https://travis-ci.org/processone/fast_xml) [![Coverage Status](https://coveralls.io/repos/processone/fast_xml/badge.svg?branch=master&service=github)](https://coveralls.io/github/processone/fast_xml?branch=master) [![Hex version](https://img.shields.io/hexpm/v/fast_xml.svg "Hex version")](https://hex.pm/packages/fast_xml)
 
 Fast Expat based Erlang XML parsing and manipulation library, with a
 strong focus on XML stream parsing from network.
@@ -10,8 +12,12 @@ It supports:
   network XML stream like XMPP.
 
 This module can parse files much faster than built-in module `xmerl`.
-Depending on file complexity and size `xml_stream:parse_element/1` can
+Depending on file complexity and size `fxml_stream:parse_element/1` can
 be 8-18 times faster than calling `xmerl_scan:string/2`.
+
+This application was previously called
+[p1_xml](https://github.com/processone/xml) and was renamed after
+major optimisations to put emphasis on the fact it is damn fast.
 
 ## Building
 
@@ -57,17 +63,20 @@ attr type if a tuple of the form:
 
 ## XML full structure parsing
 
-You can definitely parse a complete XML structure with `p1_xml`:
+You can definitely parse a complete XML structure with `fast_xml`:
 
-```
+```shell
 $ erl -pa ebin
 Erlang/OTP 17 [erts-6.3] [source] [64-bit] [smp:4:4] [async-threads:10] [hipe] [kernel-poll:false] [dtrace]
 
 Eshell V6.3  (abort with ^G)
-1> application:start(p1_xml).
+1> application:start(fast_xml).
 ok
-2> xml_stream:parse_element(<<"<test>content cdata</test>">>).
-{xmlel,<<"test">>,[],[{xmlcdata,<<"content cdata">>}]}
+2> rr(fxml).
+[xmlel]
+3> fxml_stream:parse_element(<<"<test>content cdata</test>">>).
+#xmlel{name = <<"test">>,attrs = [],
+       children = [{xmlcdata,<<"content cdata">>}]}
 ```
 
 ## XML Stream parsing example
@@ -87,22 +96,22 @@ own application.
 
 Here is an example XML stream parsing:
 
-```
+```shell
 $ erl -pa ebin
 Erlang/OTP 17 [erts-6.3] [source] [64-bit] [smp:4:4] [async-threads:10] [hipe] [kernel-poll:false] [dtrace]
 
 Eshell V6.3  (abort with ^G)
 
 % Start the application:
-1> application:start(p1_xml).
+1> application:start(fast_xml).
 ok
 
 % Create a new stream, using self PID to received XML parsing event:
-2> S1 = xml_stream:new(self()).
+2> S1 = fxml_stream:new(self()).
 <<>>
 
 % Start feeding content to the XML parser.
-3> S2 = xml_stream:parse(S1, <<"<root>">>).
+3> S2 = fxml_stream:parse(S1, <<"<root>">>).
 <<>>
 
 % Receive Erlang message send to shell process:
@@ -111,7 +120,7 @@ Shell got {'$gen_event',{xmlstreamstart,<<"root">>,[]}}
 ok
 
 % Feed more content:
-5> S3 = xml_stream:parse(S2, <<"<xmlelement>content cdata</xmlelement">>).
+5> S3 = fxml_stream:parse(S2, <<"<xmlelement>content cdata</xmlelement">>).
 <<>>
 
 % Receive more messages:
@@ -123,7 +132,7 @@ Shell got {'$gen_event',
 ok
 
 % Feed more content:
-7> S4 = xml_stream:parse(S3, <<"</root>">>).      
+7> S4 = fxml_stream:parse(S3, <<"</root>">>).      
 <<>>
 
 % Receive messages:
@@ -131,7 +140,7 @@ ok
 Shell got {'$gen_event',{xmlstreamend,<<"root">>}}
 ok
 
-9> xml_stream:close(S4).
+9> fxml_stream:close(S4).
 true
 ```
 
