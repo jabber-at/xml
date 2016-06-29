@@ -46,7 +46,7 @@ typedef struct xmlel_stack_t {
   ERL_NIF_TERM attrs;
   children_list_t *children;
   struct xmlel_stack_t *next;
-  char *namespace;
+  char *namespace_str;
   int redefined_top_prefix;
 } xmlel_stack_t;
 
@@ -63,7 +63,9 @@ typedef struct {
   attrs_list_t *xmlns_attrs;
   attrs_list_t *top_xmlns_attrs;
   const char *error;
-  int normalize_ns;
+  char normalize_ns:1;
+  char gen_server:1;
+  char use_maps:1;
 } state_t;
 
 typedef enum xmlns_op {
@@ -202,7 +204,7 @@ static xmlns_op encode_name(state_t *state, const char *xml_name, ErlNifBinary *
       {
           res = OP_REMOVE_PREFIX;
           with_prefix = 1;
-      } else if (same_str_buf(state->elements_stack->namespace, ns, ns_len)) {
+      } else if (same_str_buf(state->elements_stack->namespace_str, ns, ns_len)) {
         res = OP_REMOVE_XMLNS;
         with_prefix = 0;
       }
@@ -225,7 +227,7 @@ static xmlns_op encode_name(state_t *state, const char *xml_name, ErlNifBinary *
     else {
       *ns_str = top_element ? dup_buf(ns, ns_len) :
                 res == OP_REMOVE_PREFIX ?
-                state->elements_stack->namespace :
+                state->elements_stack->namespace_str :
                 dup_buf(ns, ns_len);
 
       if (!*ns_str) {
@@ -258,21 +260,41 @@ static ERL_NIF_TERM str2bin(ErlNifEnv *env, const char *s)
 static void send_event(state_t *state, ERL_NIF_TERM el)
 {
   state->size = 0;
-  enif_send(state->env, state->pid, state->send_env,
-	    enif_make_tuple2(state->send_env,
-			     enif_make_atom(state->send_env, "$gen_event"),
-			     el));
+  if (state->gen_server) {
+    enif_send(state->env, state->pid, state->send_env,
+              enif_make_tuple2(state->send_env,
+                               enif_make_atom(state->send_env, "$gen_event"),
+                               el));
+  } else {
+    enif_send(state->env, state->pid, state->send_env, el);
+  }
   enif_clear_env(state->send_env);
 }
 
 static void send_all_state_event(state_t *state, ERL_NIF_TERM el)
 {
   state->size = 0;
-  enif_send(state->env, state->pid, state->send_env,
-	    enif_make_tuple2(state->send_env,
-			     enif_make_atom(state->send_env, "$gen_all_state_event"),
-			     el));
+  if (state->gen_server) {
+    enif_send(state->env, state->pid, state->send_env,
+              enif_make_tuple2(state->send_env,
+                               enif_make_atom(state->send_env, "$gen_all_state_event"),
+                               el));
+  } else {
+    enif_send(state->env, state->pid, state->send_env, el);
+  }
   enif_clear_env(state->send_env);
+}
+
+static ERL_NIF_TERM append_attr(state_t *state, ERL_NIF_TERM root, ERL_NIF_TERM name, ERL_NIF_TERM value) {
+  ErlNifEnv* env = state->send_env;
+
+  if (state->use_maps) {
+    ERL_NIF_TERM res;
+    enif_make_map_put(env, root, name, value, &res);
+    return res;
+  } else {
+    return enif_make_list_cell(env, enif_make_tuple2(env, name, value), root);
+  }
 }
 
 void erlXML_StartElementHandler(state_t *state,
@@ -281,8 +303,14 @@ void erlXML_StartElementHandler(state_t *state,
 {
   int i = 0;
   ErlNifEnv* env = state->send_env;
-  ERL_NIF_TERM attrs_term = enif_make_list(env, 0);
+  ERL_NIF_TERM attrs_term;
   ErlNifBinary name_bin;
+
+  if (state->use_maps) {
+    attrs_term = enif_make_new_map(env);
+  } else {
+    attrs_term = enif_make_list(env, 0);
+  }
 
   if (state->error)
     return;
@@ -306,8 +334,7 @@ void erlXML_StartElementHandler(state_t *state,
     PARSER_MEM_ASSERT(val_str);
     memcpy(val_str, atts[i+1], val_len);
 
-    ERL_NIF_TERM el = enif_make_tuple2(env, enif_make_binary(env, &attr_name), val);
-    attrs_term = enif_make_list_cell(env, el, attrs_term);
+    attrs_term = append_attr(state, attrs_term, enif_make_binary(env, &attr_name), val);
     i -= 2;
   }
 
@@ -330,6 +357,7 @@ void erlXML_StartElementHandler(state_t *state,
 
   while (state->xmlns_attrs) {
     ERL_NIF_TERM tuple = 0;
+    ERL_NIF_TERM tuple_name = 0, tuple_val = 0;
     attrs_list_t *c = state->xmlns_attrs;
     ErlNifBinary new_prefix, new_ns;
 
@@ -368,8 +396,13 @@ void erlXML_StartElementHandler(state_t *state,
         continue;
       } else if (xmlns_op == OP_REPLACE_XMLNS) {
         enif_release_binary(&c->value);
-        tuple = enif_make_tuple2(env, enif_make_binary(env, &c->name),
-                                 dup_to_term(env, ns, strlen(ns)));
+        if (state->use_maps) {
+          tuple_name = enif_make_binary(env, &c->name);
+          tuple_val = dup_to_term(env, ns, strlen(ns));
+        } else {
+          tuple = enif_make_tuple2(env, enif_make_binary(env, &c->name),
+                                   dup_to_term(env, ns, strlen(ns)));
+        }
         xmlns_op = OP_NOP;
       }
       if (!ns && state->normalize_ns)
@@ -385,11 +418,19 @@ void erlXML_StartElementHandler(state_t *state,
       redefined_top_prefix = 1;
     }
 
-    if (!tuple) {
-      tuple = enif_make_tuple2(env, enif_make_binary(env, &c->name),
-                               enif_make_binary(env, &c->value));
+    if (state->use_maps) {
+      if (!tuple_name) {
+        enif_make_map_update(env, attrs_term, enif_make_binary(env, &c->name),
+                             enif_make_binary(env, &c->value), &attrs_term);
+      } else
+        enif_make_map_update(env, attrs_term, tuple_name, tuple_val, &attrs_term);
+    } else {
+      if (!tuple) {
+        tuple = enif_make_tuple2(env, enif_make_binary(env, &c->name),
+                                 enif_make_binary(env, &c->value));
+      }
+      attrs_term = enif_make_list_cell(env, tuple, attrs_term);
     }
-    attrs_term = enif_make_list_cell(env, tuple, attrs_term);
 
     if (non_xmpp_ns && state->depth == 1 && state->normalize_ns && c->name.size > 6) {
       c->name = new_prefix;
@@ -405,9 +446,8 @@ void erlXML_StartElementHandler(state_t *state,
   }
 
   if (xmlns_op == OP_REPLACE_XMLNS) {
-    ERL_NIF_TERM  tuple = enif_make_tuple2(env, dup_to_term(env, "xmlns", 5),
-                                           dup_to_term(env, ns, strlen(ns)));
-    attrs_term = enif_make_list_cell(env, tuple, attrs_term);
+    attrs_term = append_attr(state, attrs_term, dup_to_term(env, "xmlns", 5),
+                             dup_to_term(env, ns, strlen(ns)));
   } else if (xmlns_op == OP_REMOVE_PREFIX) {
     enif_free(pfx);
   }
@@ -420,18 +460,29 @@ void erlXML_StartElementHandler(state_t *state,
 
   xmlel->next = state->elements_stack;
   xmlel->attrs = attrs_term;
-  xmlel->namespace = ns;
+  xmlel->namespace_str = ns;
   xmlel->children = NULL;
   xmlel->redefined_top_prefix = redefined_top_prefix;
 
   state->elements_stack = xmlel;
 
   if (state->pid && state->depth == 1) {
-    send_event(state,
-               enif_make_tuple3(env,
-                                enif_make_atom(env, "xmlstreamstart"),
-                                enif_make_binary(env, &name_bin),
-                                attrs_term));
+    if (state->use_maps) {
+      ERL_NIF_TERM map = enif_make_new_map(env);
+      enif_make_map_put(env, map, enif_make_atom(env, "__struct__"),
+                        enif_make_atom(env, "Elixir.FastXML.StreamStart"), &map);
+      enif_make_map_put(env, map, enif_make_atom(env, "name"),
+                        enif_make_binary(env, &name_bin), &map);
+      enif_make_map_put(env, map, enif_make_atom(env, "attrs"),
+                        attrs_term, &map);
+      send_event(state, map);
+    } else {
+      send_event(state,
+                 enif_make_tuple3(env,
+                                  enif_make_atom(env, "xmlstreamstart"),
+                                  enif_make_binary(env, &name_bin),
+                                  attrs_term));
+    }
   } else {
     xmlel->name = enif_make_binary(env, &name_bin);
   }
@@ -481,17 +532,22 @@ void erlXML_CharacterDataHandler(state_t *state, const XML_Char *s, int len)
 }
 
 ERL_NIF_TERM
-make_xmlel_children_list(ErlNifEnv *env, children_list_t *list) {
+make_xmlel_children_list(state_t *state, children_list_t *list) {
+  ErlNifEnv *env = state->send_env;
   ERL_NIF_TERM children_list = enif_make_list(env, 0);
 
   while (list) {
-    if (list->is_cdata)
-      children_list = enif_make_list_cell(env,
-                                          enif_make_tuple2(env,
-                                                           enif_make_atom(env, "xmlcdata"),
-                                                           enif_make_binary(env, &list->cdata)),
-                                          children_list);
-    else
+    if (list->is_cdata) {
+      ERL_NIF_TERM data;
+      if (state->use_maps) {
+        data = enif_make_binary(env, &list->cdata);
+      } else {
+        data = enif_make_tuple2(env,
+                         enif_make_atom(env, "xmlcdata"),
+                         enif_make_binary(env, &list->cdata));
+      }
+      children_list = enif_make_list_cell(env, data, children_list);
+    } else
       children_list = enif_make_list_cell(env, list->term, children_list);
 
     children_list_t *old_head = list;
@@ -517,19 +573,38 @@ void erlXML_EndElementHandler(state_t *state, const XML_Char *name)
 
     PARSER_MEM_ASSERT(encode_name(state, name, &name_bin, NULL, NULL, 0));
 
-    send_event(state,
-	       enif_make_tuple2(env,
-				enif_make_atom(env, "xmlstreamend"),
-                                enif_make_binary(env, &name_bin)));
+    if (state->use_maps) {
+      ERL_NIF_TERM map = enif_make_new_map(env);
+      enif_make_map_put(env, map, enif_make_atom(env, "__struct__"),
+                        enif_make_atom(env, "Elixir.FastXML.StreamEnd"), &map);
+      enif_make_map_put(env, map, enif_make_atom(env, "name"),
+                        enif_make_binary(env, &name_bin), &map);
+      send_event(state, map);
+    } else {
+      send_event(state,
+                 enif_make_tuple2(env,
+                                  enif_make_atom(env, "xmlstreamend"),
+                                  enif_make_binary(env, &name_bin)));
+    }
     return;
   }
 
   ERL_NIF_TERM xmlel_term;
 
-  xmlel_term = enif_make_tuple4(env, enif_make_atom(env, "xmlel"),
-                                state->elements_stack->name,
-                                state->elements_stack->attrs,
-                                make_xmlel_children_list(env, state->elements_stack->children));
+  if (state->use_maps) {
+    xmlel_term = enif_make_new_map(env);
+    enif_make_map_put(env, xmlel_term, enif_make_atom(env, "__struct__"),
+                      enif_make_atom(env, "Elixir.FastXML.El"), &xmlel_term);
+    enif_make_map_put(env, xmlel_term, enif_make_atom(env, "name"), state->elements_stack->name, &xmlel_term);
+    enif_make_map_put(env, xmlel_term, enif_make_atom(env, "attrs"), state->elements_stack->attrs, &xmlel_term);
+    enif_make_map_put(env, xmlel_term, enif_make_atom(env, "children"),
+        make_xmlel_children_list(state, state->elements_stack->children), &xmlel_term);
+  } else {
+    xmlel_term = enif_make_tuple4(env, enif_make_atom(env, "xmlel"),
+                                  state->elements_stack->name,
+                                  state->elements_stack->attrs,
+                                  make_xmlel_children_list(state, state->elements_stack->children));
+  }
 
   if (!state->pid || state->depth > 1) {
     children_list_t *el;
@@ -543,19 +618,25 @@ void erlXML_EndElementHandler(state_t *state, const XML_Char *name)
     el->term = xmlel_term;
     el->next = state->elements_stack->children;
     state->elements_stack->children = el;
-    if (cur_el->namespace != state->elements_stack->namespace)
-      enif_free(cur_el->namespace);
+    if (cur_el->namespace_str != state->elements_stack->namespace_str)
+      enif_free(cur_el->namespace_str);
     enif_free(cur_el);
   } else {
     xmlel_stack_t *cur_el = state->elements_stack;
     state->elements_stack = cur_el->next;
-    if (!state->elements_stack || cur_el->namespace != state->elements_stack->namespace)
-      enif_free(cur_el->namespace);
+    if (!state->elements_stack || cur_el->namespace_str != state->elements_stack->namespace_str)
+      enif_free(cur_el->namespace_str);
     enif_free(cur_el);
-    send_event(state,
-	       enif_make_tuple2(state->send_env,
-				enif_make_atom(state->send_env, "xmlstreamelement"),
-				xmlel_term));
+    if (state->use_maps) {
+      enif_make_map_put(env, xmlel_term, enif_make_atom(env, "__struct__"),
+                        enif_make_atom(env, "Elixir.FastXML.El"), &xmlel_term);
+      send_event(state, xmlel_term);
+    } else {
+      send_event(state,
+                 enif_make_tuple2(state->send_env,
+                                  enif_make_atom(state->send_env, "xmlstreamelement"),
+                                  xmlel_term));
+    }
   }
 
   return;
@@ -658,8 +739,8 @@ static void free_parser_allocated_structs(state_t *state) {
       c->children = cc->next;
       enif_free(cc);
     }
-    if (!c->next || c->namespace != c->next->namespace)
-      enif_free(c->namespace);
+    if (!c->next || c->namespace_str != c->next->namespace_str)
+      enif_free(c->namespace_str);
     state->elements_stack = c->next;
     enif_free(c);
   }
@@ -821,6 +902,25 @@ static ERL_NIF_TERM parse_element_nif(ErlNifEnv* env, int argc,
   return el;
 }
 
+static void send_error(state_t *state, ERL_NIF_TERM msg) {
+  ErlNifEnv *env = state->send_env;
+
+  if (state->use_maps) {
+    ERL_NIF_TERM map = enif_make_new_map(env);
+    enif_make_map_put(env, map, enif_make_atom(env, "__struct__"),
+                      enif_make_atom(env, "Elixir.FastXML.StreamError"), &map);
+    enif_make_map_put(env, map, enif_make_atom(env, "desc"),
+                      msg, &map);
+
+    send_event(state, map);
+  } else {
+    send_event(state,
+               enif_make_tuple2(env,
+                                enif_make_atom(env, "xmlstreamerror"),
+                                msg));
+  }
+}
+
 static ERL_NIF_TERM parse_nif(ErlNifEnv* env, int argc,
 			      const ERL_NIF_TERM argv[])
 {
@@ -843,19 +943,13 @@ static ERL_NIF_TERM parse_nif(ErlNifEnv* env, int argc,
   state->env = env;
 
   if (state->size >= state->max_size) {
-    send_event(state,
-	       enif_make_tuple2(state->send_env,
-				enif_make_atom(state->send_env, "xmlstreamerror"),
-				str2bin(state->send_env, "XML stanza is too big")));
+    send_error(state, str2bin(state->send_env, "XML stanza is too big"));
   } else {
     int res = XML_Parse(state->parser, (char *)bin.data, bin.size, 0);
     if (!res)
-      send_event(state,
-                 enif_make_tuple2(state->send_env,
-                                  enif_make_atom(state->send_env, "xmlstreamerror"),
-                                  state->error ?
-                                  str2bin(state->send_env, state->error) :
-                                  make_parse_error(state->send_env, state->parser)));
+      send_error(state, state->error ?
+                        str2bin(state->send_env, state->error) :
+                        make_parse_error(state->send_env, state->parser));
   }
 
   return argv[0];
@@ -906,8 +1000,26 @@ static ERL_NIF_TERM close_nif(ErlNifEnv* env, int argc,
 static ERL_NIF_TERM new_nif(ErlNifEnv* env, int argc,
 			    const ERL_NIF_TERM argv[])
 {
-  if (argc != 2)
+  int gen_srv = 1;
+  int use_maps = 0;
+
+  if (argc != 2 && argc != 3)
     return enif_make_badarg(env);
+
+  if (argc == 3) {
+    if (!enif_is_list(env, argv[2]))
+      return enif_make_badarg(env);
+    ERL_NIF_TERM head, tail = argv[2];
+    while (enif_get_list_cell(env, tail, &head, &tail)) {
+      char buf[16];
+      if (enif_get_atom(env, head, buf, sizeof(buf), ERL_NIF_LATIN1)) {
+        if (strcmp("no_gen_server", buf) == 0)
+          gen_srv = 0;
+        else if (strcmp("use_maps", buf) == 0)
+          use_maps = 1;
+      }
+    }
+  }
 
   ErlNifPid pid;
   if (!enif_get_local_pid(env, argv[0], &pid))
@@ -918,6 +1030,8 @@ static ERL_NIF_TERM new_nif(ErlNifEnv* env, int argc,
     return enif_make_badarg(env);
 
   state->normalize_ns = 1;
+  state->use_maps = use_maps;
+  state->gen_server = gen_srv;
 
   ERL_NIF_TERM result = enif_make_resource(env, state);
   enif_release_resource(state);
@@ -936,6 +1050,7 @@ static ERL_NIF_TERM new_nif(ErlNifEnv* env, int argc,
 static ErlNifFunc nif_funcs[] =
   {
     {"new", 2, new_nif},
+    {"new", 3, new_nif},
     {"parse", 2, parse_nif},
     {"parse_element", 1, parse_element_nif},
     {"reset", 1, reset_nif},
