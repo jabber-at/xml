@@ -1,3 +1,22 @@
+# Version 1.1.19
+
+* Add checks for empty string (Paweł Chmielowski)
+* Remove unused code (Paweł Chmielowski)
+* Load locally build .so file when performing tests (Paweł Chmielowski)
+
+# Version 1.1.18
+
+* Use p1_utils 1.0.6 (Paweł Chmielowski)
+* fix xref with otp 17 (Paweł Chmielowski)
+
+# Version 1.1.17
+
+* Add 'undefined' type to some record fields type specs (Evgeniy Khramtsov)
+
+# Version 1.1.16
+
+* Improve XML generator (Evgeniy Khramtsov)
+
 # Version 1.1.15
 
 * Update to p1_utils 1.0.5 (Mickaël Rémond)

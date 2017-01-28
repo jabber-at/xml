@@ -5,7 +5,7 @@
 %%% Created : 20 Nov 2002 by Alexey Shchepin <alexey@process-one.net>
 %%%
 %%%
-%%% Copyright (C) 2002-2016 ProcessOne, SARL. All Rights Reserved.
+%%% Copyright (C) 2002-2017 ProcessOne, SARL. All Rights Reserved.
 %%%
 %%% Licensed under the Apache License, Version 2.0 (the "License");
 %%% you may not use this file except in compliance with the License.
@@ -25,7 +25,9 @@
 
 -author('alexey@process-one.net').
 
--export([element_to_binary/1,
+-compile(no_native).
+
+-export([element_to_binary/1, element_to_header/1,
 	 crypt/1, remove_cdata/1,
 	 remove_subtags/3, get_cdata/1, get_tag_cdata/1,
 	 get_attr/2, get_attr_s/2, get_tag_attr/2,
@@ -34,13 +36,17 @@
 	 append_subtags/2, get_path_s/2,
 	 replace_tag_attr/3, replace_subtag/2, to_xmlel/1]).
 
--export([load_nif/0]).
+-export([load_nif/0, load_nif/1]).
 
 -include("fxml.hrl").
+-export_type([xmlel/0]).
 
 %% Replace element_to_binary/1 with NIF
 load_nif() ->
     SOPath = p1_nif_utils:get_so_path(?MODULE, [fast_xml], "fxml"),
+    load_nif(SOPath).
+
+load_nif(SOPath) ->
     case catch erlang:load_nif(SOPath, 0) of
         ok -> ok;
         Err -> error_logger:warning_msg("unable to load fxml NIF: ~p~n", [Err]),
@@ -51,6 +57,11 @@ load_nif() ->
 -spec element_to_binary(El :: xmlel() | cdata()) -> binary().
 
 element_to_binary(_El) ->
+    erlang:nif_error(nif_not_loaded).
+
+-spec element_to_header(El :: xmlel()) -> binary().
+
+element_to_header(_El) ->
     erlang:nif_error(nif_not_loaded).
 
 crypt(S) ->

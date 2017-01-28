@@ -5,7 +5,7 @@
 %%% Created : 1 May 2013 by Evgeniy Khramtsov <ekhramtsov@process-one.net>
 %%%
 %%%
-%%% Copyright (C) 2002-2016 ProcessOne, SARL. All Rights Reserved.
+%%% Copyright (C) 2002-2017 ProcessOne, SARL. All Rights Reserved.
 %%%
 %%% Licensed under the Apache License, Version 2.0 (the "License");
 %%% you may not use this file except in compliance with the License.
@@ -27,13 +27,13 @@
 -record(attr, {name,
 	       label,
 	       required = false,
-	       default,
+	       default = '$unset',
 	       dec,
 	       enc}).
 
 -record(cdata, {required = false,
 		label = '$cdata',
-		default,
+		default = '$unset',
 		dec,
 		enc}).
 

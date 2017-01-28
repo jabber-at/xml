@@ -5,7 +5,7 @@
 %%% Created : 17 Nov 2002 by Alexey Shchepin <alexey@process-one.net>
 %%%
 %%%
-%%% Copyright (C) 2002-2016 ProcessOne, SARL. All Rights Reserved.
+%%% Copyright (C) 2002-2017 ProcessOne, SARL. All Rights Reserved.
 %%%
 %%% Licensed under the Apache License, Version 2.0 (the "License");
 %%% you may not use this file except in compliance with the License.
@@ -25,10 +25,12 @@
 
 -author('alexey@process-one.net').
 
+-compile(no_native).
+
 -export([new/1, new/2, new/3, parse/2, close/1, reset/1,
 	 change_callback_pid/2, parse_element/1]).
 
--export([load_nif/0]).
+-export([load_nif/0, load_nif/1]).
 
 -include("fxml.hrl").
 
@@ -52,13 +54,16 @@
 -export_type([xml_stream_state/0, xml_stream_el/0]).
 
 load_nif() ->
-    NifFile = p1_nif_utils:get_so_path(?MODULE, [fast_xml], "fxml_stream"),
-    case erlang:load_nif(NifFile, 0) of
+    SOPath = p1_nif_utils:get_so_path(?MODULE, [fast_xml], "fxml_stream"),
+    load_nif(SOPath).
+
+load_nif(SOPath) ->
+    case erlang:load_nif(SOPath, 0) of
 	ok ->
 	    ok;
         {error, {Reason, Txt}} ->
             error_logger:error_msg("failed to load NIF ~s: ~s",
-                                   [NifFile, Txt]),
+                                   [SOPath, Txt]),
             {error, Reason}
     end.
 

@@ -5,7 +5,7 @@
 %%% Created : 17 Dec 2013 by Evgeny Khramtsov <ekhramtsov@process-one.net>
 %%%
 %%%
-%%% Copyright (C) 2002-2016 ProcessOne, SARL. All Rights Reserved.
+%%% Copyright (C) 2002-2017 ProcessOne, SARL. All Rights Reserved.
 %%%
 %%% Licensed under the Apache License, Version 2.0 (the "License");
 %%% you may not use this file except in compliance with the License.
@@ -39,7 +39,8 @@ close(State) ->
     ?assertEqual(true, fxml_stream:close(State)).
 
 start_test() ->
-    ?assertEqual(ok, application:start(fast_xml)).
+    ?assertEqual(ok, fxml:load_nif(p1_nif_utils:get_so_path(fxml, [], "fxml"))),
+    ?assertEqual(ok, fxml_stream:load_nif(p1_nif_utils:get_so_path(fxml_stream, [], "fxml_stream"))).
 
 tag_test() ->
     ?assertEqual(#xmlel{name = <<"root">>},
@@ -411,6 +412,23 @@ element_to_binary_test() ->
 				   attrs = [{<<"xmlns">>,
 					     <<"http://jabber.org/protocol/disco#info">>}],
 				   children = []}]})).
+
+element_to_header_test() ->
+    ?assertEqual(
+       <<"<?xml version='1.0'?><stream:stream "
+	 "xmlns:stream='http://etherx.jabber.org/streams' "
+	 "xmlns='jabber:server' xmlns:db='jabber:server:dialback' "
+	 "id='4774242664715222330' version='1.0'>">>,
+       fxml:element_to_header(
+	 #xmlel{name = <<"stream:stream">>,
+		attrs = [{<<"xmlns:stream">>,<<"http://etherx.jabber.org/streams">>},
+			 {<<"xmlns">>,<<"jabber:server">>},
+			 {<<"xmlns:db">>,<<"jabber:server:dialback">>},
+			 {<<"id">>,<<"4774242664715222330">>},
+			 {<<"version">>,<<"1.0">>}]})).
+
+element_to_header_xmlcdata_test() ->
+    ?assertError(badarg, fxml:element_to_header({xmlcdata, <<"">>})).
 
 crypt_test() ->
     ?assertEqual(
@@ -860,6 +878,3 @@ rpc_empty_response_test() ->
     Result = {response, []},
     ?assertEqual({ok, Result}, fxmlrpc:decode(Response)),
     ?assertEqual(Response, fxmlrpc:encode(Result)).
-
-application_stop_test() ->
-    ?assertEqual(ok, application:stop(fast_xml)).
