@@ -1,3 +1,11 @@
+# Version 1.1.21
+
+* Add code for building on FreeBSD (Dave Cottlehuber)
+
+# Version 1.1.20
+
+* Make XML generator working on OTP 18 (Evgeniy Khramtsov)
+
 # Version 1.1.19
 
 * Add checks for empty string (Paweł Chmielowski)
