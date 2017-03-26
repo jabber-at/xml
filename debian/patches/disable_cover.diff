@@ -1,3 +1,8 @@
+Description: disable coverage report
+ Without this patch, coverage reports are disabled. This currently fails under
+ Ubuntu Zesty for unknown reasons. See also:
+Author: Mathias Ertl <mati@jabber.at>
+Bug: https://github.com/processone/fast_xml/issues/21
 --- a/rebar.config
 +++ b/rebar.config
 @@ -34,7 +34,7 @@
