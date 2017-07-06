@@ -1,6 +1,7 @@
 erlang-p1-xml (1.1.23-0.1) unstable; urgency=medium
 
   * New upstream release.
+  * Update Standards-Version to 4.0.0 (no changes needed).
 
  -- Mathias Ertl <mati@jabber.at>  Thu, 06 Jul 2017 23:05:17 +0200
 

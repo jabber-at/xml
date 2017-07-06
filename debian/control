@@ -2,8 +2,8 @@ Source: erlang-p1-xml
 Priority: optional
 Maintainer: Mathias Ertl <mati@jabber.at>
 XSBC-Orig-Maintainer: Philipp Huebner <debalance@debian.org>
-Build-Depends: debhelper (>= 9), dh-rebar, erlang-eunit, erlang-p1-utils (>= 1.0.7), erlang-syntax-tools, libexpat1-dev
-Standards-Version: 3.9.8
+Build-Depends: debhelper (>= 9), dh-rebar, erlang-eunit, erlang-p1-utils (>= 1.0.9), erlang-syntax-tools, libexpat1-dev
+Standards-Version: 4.0.0
 Section: libs
 Homepage: https://github.com/processone/fast_xml
 VCS-Browser: https://github.com/jabber-at/xml
