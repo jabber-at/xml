@@ -4,6 +4,8 @@ erlang-p1-xml (1.1.24-0.1) unstable; urgency=medium
   * Update watch file.
   * Enable hardening.
   * Update copyright file.
+  * Update Standards-Version to 4.1.0 (no changes needed).
+  * Add erlang-base as build dependency.
 
  -- Mathias Ertl <mati@jabber.at>  Sat, 30 Sep 2017 12:19:06 +0200
 
