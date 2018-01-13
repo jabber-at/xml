@@ -1,3 +1,9 @@
+erlang-p1-xml (1.1.28-0.1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Mathias Ertl <mati@jabber.at>  Sat, 13 Jan 2018 13:54:26 +0100
+
 erlang-p1-xml (1.1.26-0.1) unstable; urgency=medium
 
   * New upstream release.
