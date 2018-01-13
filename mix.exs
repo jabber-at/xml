@@ -18,12 +18,12 @@ defmodule FastXML.Mixfile do
   def project do
     [ app: :fast_xml,
       description: "Fast Expat-based Erlang / Elixir XML parsing library",
-      version: "1.1.13",
-      elixir: "~> 1.3",
+      version: "1.1.28",
+      elixir: "~> 1.4",
       compilers: [:elixir_make | Mix.compilers],
       make_makefile: "Makefile",
-      deps: deps,
-      package: package
+      deps: deps(),
+      package: package()
     ]
   end
 
@@ -35,7 +35,7 @@ defmodule FastXML.Mixfile do
 
   defp package do
     [# These are the default files included in the package
-     files: ["src", "lib", "c_src/*.c", "mix.exs", "rebar.config", "rebar.config.script", "Makefile.mix", "priv", "include", "README.md", "LICENSE.txt"],
+     files: ["src", "lib", "c_src/*.c", "mix.exs", "rebar.config", "rebar.config.script", "Makefile", "Makefile.mix", "priv", "include", "README.md", "LICENSE.txt"],
      maintainers: ["ProcessOne"],
      licenses: ["Apache 2.0"],
      links: %{"GitHub" => "https://github.com/processone/fast_xml",
