@@ -2,7 +2,7 @@ Source: erlang-p1-xml
 Priority: optional
 Maintainer: Mathias Ertl <mati@jabber.at>
 XSBC-Orig-Maintainer: Philipp Huebner <debalance@debian.org>
-Build-Depends: debhelper (>= 9), dh-rebar, erlang-base (>= 1:17.5), erlang-eunit, erlang-p1-utils (>= 1.0.10), erlang-syntax-tools, libexpat1-dev
+Build-Depends: debhelper (>= 9), dh-rebar, erlang-base (>= 1:17.5), erlang-eunit, erlang-p1-utils (>= 1.0.11), erlang-syntax-tools, libexpat1-dev
 Standards-Version: 4.1.3
 Section: libs
 Homepage: https://github.com/processone/fast_xml
@@ -12,7 +12,7 @@ VCS-Git: https://github.com/jabber-at/xml.git
 Package: erlang-p1-xml
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, erlang-base (>= 1:17.5) | ${erlang-abi:Depends},
-         ${erlang:Depends}, erlang-p1-utils (>= 1.0.10)
+         ${erlang:Depends}, erlang-p1-utils (>= 1.0.11)
 Description: XML utilities for Erlang
  This library was written for ejabberd which still uses it.
  It was split off into it's own project to follow
