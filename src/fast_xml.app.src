@@ -23,10 +23,10 @@
 
 {application, fast_xml,
  [{description,  "Fast Expat-based Erlang / Elixir XML parsing library"},
-  {vsn,          "1.1.29"},
+  {vsn,          "1.1.30"},
   {modules,      []},
   {registered,   []},
-  {applications, [kernel, stdlib]},
+  {applications, [kernel, stdlib, p1_utils]},
   {mod,          {fast_xml,[]}},
 
   %% hex.pm packaging:
