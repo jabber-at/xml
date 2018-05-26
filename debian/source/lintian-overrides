@@ -1,2 +1,5 @@
-source: maintainer-upload-has-incorrect-version-number
-source: unknown-field-in-dsc orig-maintainer
+erlang-p1-xml source: debian-watch-does-not-check-gpg-signature
+erlang-p1-xml source: testsuite-autopkgtest-missing
+erlang-p1-xml source: source-contains-empty-directory priv/lib/
+erlang-p1-xml source: maintainer-upload-has-incorrect-version-number
+erlang-p1-xml source: unknown-field-in-dsc orig-maintainer

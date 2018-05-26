@@ -1,6 +1,8 @@
 erlang-p1-xml (1.1.30-0.1) unstable; urgency=medium
 
   * New upstream release.
+  * Remove disable_cover.diff patch.
+  * Merge trivial changes from upstream package.
 
  -- Mathias Ertl <mati@jabber.at>  Sat, 26 May 2018 12:52:09 +0200
 
