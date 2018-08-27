@@ -3,6 +3,7 @@ erlang-p1-xml (1.1.31-0.1) unstable; urgency=medium
   * New upstream version 1.1.31
   * Added debian/upstream/metadata
   * Switched to debhelper 11
+  * Add missing changelog entry about updated Standards-Version in 1.1.30
 
  -- Mathias Ertl <mati@jabber.at>  Mon, 27 Aug 2018 10:29:51 +0200
 
@@ -11,6 +12,7 @@ erlang-p1-xml (1.1.30-0.1) unstable; urgency=medium
   * New upstream release.
   * Remove disable_cover.diff patch.
   * Merge trivial changes from upstream package.
+  * Updated Standards-Version: 4.1.4 (no changes needed)
 
  -- Mathias Ertl <mati@jabber.at>  Sat, 26 May 2018 12:52:09 +0200
 
